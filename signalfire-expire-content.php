@@ -1,112 +1,173 @@
 <?php
 /**
  * Plugin Name: Signalfire Expire Content
- * Plugin URI: https://signalfire.com
+ * Plugin URI: https://wordpress.org/plugins/signalfire-expire-content/
  * Description: Adds expiration functionality to posts and pages with customizable actions when content expires.
  * Version: 1.0.0
  * Author: Signalfire
+ * Author URI: https://signalfire.com
  * Text Domain: signalfire-expire-content
  * Domain Path: /languages
  * Requires at least: 5.0
- * Tested up to: 6.3
+ * Tested up to: 6.8
  * Requires PHP: 7.4
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * @package SignalfireExpireContent
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
+/**
+ * Main plugin class for Signalfire Expire Content.
+ *
+ * @since 1.0.0
+ */
 class SignalfireExpireContent {
+
+	/**
+	 * Meta key for expiration date.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $meta_key_date = 'sec_expiration_date';
+
+	/**
+	 * Meta key for expiration time.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $meta_key_time = 'sec_expiration_time';
+
+	/**
+	 * Meta key for expiration action.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $meta_key_action = 'sec_expiration_action';
+
+	/**
+	 * Meta key for expiration URL.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $meta_key_url = 'sec_expiration_url';
+
+	/**
+	 * Constructor - Set up hooks and actions.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __construct() {
+		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
+		add_action( 'save_post', array( $this, 'save_meta_box' ) );
+		add_action( 'wp', array( $this, 'check_expiration' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'transition_post_status', array( $this, 'handle_post_republish' ), 10, 3 );
+
+		// Admin columns.
+		add_filter( 'manage_posts_columns', array( $this, 'add_expiration_column' ) );
+		add_filter( 'manage_pages_columns', array( $this, 'add_expiration_column' ) );
+		add_action( 'manage_posts_custom_column', array( $this, 'display_expiration_column' ), 10, 2 );
+		add_action( 'manage_pages_custom_column', array( $this, 'display_expiration_column' ), 10, 2 );
+
+		register_activation_hook( __FILE__, array( $this, 'activate' ) );
+	}
     
-    private $meta_key_date = 'sec_expiration_date';
-    private $meta_key_time = 'sec_expiration_time';
-    private $meta_key_action = 'sec_expiration_action';
-    private $meta_key_url = 'sec_expiration_url';
+	/**
+	 * Initialize the plugin.
+	 *
+	 * @since 1.0.0
+	 */
+	public function init() {
+		load_plugin_textdomain( 'signalfire-expire-content', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	/**
+	 * Plugin activation hook.
+	 *
+	 * @since 1.0.0
+	 */
+	public function activate() {
+		// Plugin activation tasks if needed.
+	}
     
-    public function __construct() {
-        add_action('init', array($this, 'init'));
-        add_action('add_meta_boxes', array($this, 'add_meta_box'));
-        add_action('save_post', array($this, 'save_meta_box'));
-        add_action('wp', array($this, 'check_expiration'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
-        add_action('transition_post_status', array($this, 'handle_post_republish'), 10, 3);
-        
-        // Admin columns
-        add_filter('manage_posts_columns', array($this, 'add_expiration_column'));
-        add_filter('manage_pages_columns', array($this, 'add_expiration_column'));
-        add_action('manage_posts_custom_column', array($this, 'display_expiration_column'), 10, 2);
-        add_action('manage_pages_custom_column', array($this, 'display_expiration_column'), 10, 2);
-        
-        register_activation_hook(__FILE__, array($this, 'activate'));
-    }
+	/**
+	 * Add meta box to post/page edit screens.
+	 *
+	 * @since 1.0.0
+	 */
+	public function add_meta_box() {
+		$post_types = array( 'post', 'page' );
+
+		foreach ( $post_types as $post_type ) {
+			add_meta_box(
+				'sec_expiration_settings',
+				__( 'Expiration Settings', 'signalfire-expire-content' ),
+				array( $this, 'meta_box_callback' ),
+				$post_type,
+				'side',
+				'high'
+			);
+		}
+	}
     
-    public function init() {
-        load_plugin_textdomain('signalfire-expire-content', false, dirname(plugin_basename(__FILE__)) . '/languages');
-    }
-    
-    public function activate() {
-        // Plugin activation tasks if needed
-    }
-    
-    public function add_meta_box() {
-        $post_types = array('post', 'page');
+	/**
+	 * Meta box callback function.
+	 *
+	 * @since 1.0.0
+	 * @param WP_Post $post The post object.
+	 */
+	public function meta_box_callback( $post ) {
+		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
+			return;
+		}
+
+		wp_nonce_field( 'sec_save_expiration', 'sec_expiration_nonce' );
         
-        foreach ($post_types as $post_type) {
-            add_meta_box(
-                'sec_expiration_settings',
-                __('Expiration Settings', 'signalfire-expire-content'),
-                array($this, 'meta_box_callback'),
-                $post_type,
-                'side',
-                'high'
-            );
-        }
-    }
-    
-    public function meta_box_callback($post) {
-        if (!current_user_can('edit_post', $post->ID)) {
-            return;
-        }
+		$expiration_date   = get_post_meta( $post->ID, $this->meta_key_date, true );
+		$expiration_time   = get_post_meta( $post->ID, $this->meta_key_time, true );
+		$expiration_action = get_post_meta( $post->ID, $this->meta_key_action, true );
+		$expiration_url    = get_post_meta( $post->ID, $this->meta_key_url, true );
         
-        wp_nonce_field('sec_save_expiration', 'sec_expiration_nonce');
-        
-        $expiration_date = get_post_meta($post->ID, $this->meta_key_date, true);
-        $expiration_time = get_post_meta($post->ID, $this->meta_key_time, true);
-        $expiration_action = get_post_meta($post->ID, $this->meta_key_action, true);
-        $expiration_url = get_post_meta($post->ID, $this->meta_key_url, true);
-        
-        // Set defaults
-        if (empty($expiration_time)) {
-            $expiration_time = '23:59';
-        }
-        if (empty($expiration_action)) {
-            $expiration_action = 'draft';
-        }
-        ?>
-        <div class="sec-expiration-fields">
-            <p>
-                <label for="sec_expiration_date">
-                    <strong><?php echo esc_html__('Expiration Date:', 'signalfire-expire-content'); ?></strong>
-                </label><br>
-                <input type="date" 
-                       id="sec_expiration_date" 
-                       name="sec_expiration_date" 
-                       value="<?php echo esc_attr($expiration_date); ?>" 
-                       class="widefat" />
-            </p>
+		// Set defaults.
+		if ( empty( $expiration_time ) ) {
+			$expiration_time = '23:59';
+		}
+		if ( empty( $expiration_action ) ) {
+			$expiration_action = 'draft';
+		}
+		?>
+		<div class="sec-expiration-fields">
+			<p>
+				<label for="sec_expiration_date">
+					<strong><?php echo esc_html__( 'Expiration Date:', 'signalfire-expire-content' ); ?></strong>
+				</label><br>
+				<input type="date"
+					   id="sec_expiration_date"
+					   name="sec_expiration_date"
+					   value="<?php echo esc_attr( $expiration_date ); ?>"
+					   class="widefat" />
+			</p>
             
-            <p>
-                <label for="sec_expiration_time">
-                    <strong><?php echo esc_html__('Expiration Time:', 'signalfire-expire-content'); ?></strong>
-                </label><br>
-                <input type="time" 
-                       id="sec_expiration_time" 
-                       name="sec_expiration_time" 
-                       value="<?php echo esc_attr($expiration_time); ?>" 
-                       class="widefat" />
-            </p>
+			<p>
+				<label for="sec_expiration_time">
+					<strong><?php echo esc_html__( 'Expiration Time:', 'signalfire-expire-content' ); ?></strong>
+				</label><br>
+				<input type="time"
+					   id="sec_expiration_time"
+					   name="sec_expiration_time"
+					   value="<?php echo esc_attr( $expiration_time ); ?>"
+					   class="widefat" />
+			</p>
             
             <p>
                 <label for="sec_expiration_action">
@@ -146,6 +207,7 @@ class SignalfireExpireContent {
                     if ($timestamp) {
                         $formatted_date = wp_date(get_option('date_format') . ' ' . get_option('time_format'), $timestamp);
                         echo sprintf(
+                            /* translators: %s: formatted expiration date and time */
                             esc_html__('Content will expire on: %s', 'signalfire-expire-content'),
                             '<strong>' . esc_html($formatted_date) . '</strong>'
                         );
@@ -205,64 +267,71 @@ class SignalfireExpireContent {
         wp_add_inline_script('jquery', $inline_script);
     }
     
-    public function save_meta_box($post_id) {
-        // Security checks
-        if (!isset($_POST['sec_expiration_nonce']) || !wp_verify_nonce($_POST['sec_expiration_nonce'], 'sec_save_expiration')) {
-            return;
-        }
+	/**
+	 * Save meta box data.
+	 *
+	 * @since 1.0.0
+	 * @param int $post_id The post ID.
+	 */
+	public function save_meta_box( $post_id ) {
+		// Security checks.
+		$nonce = isset( $_POST['sec_expiration_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'sec_save_expiration' ) ) {
+			return;
+		}
+
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		// Sanitize and save data.
+		$expiration_date   = isset( $_POST['sec_expiration_date'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_date'] ) ) : '';
+		$expiration_time   = isset( $_POST['sec_expiration_time'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_time'] ) ) : '';
+		$expiration_action = isset( $_POST['sec_expiration_action'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_action'] ) ) : '';
+		$expiration_url    = isset( $_POST['sec_expiration_url'] ) ? esc_url_raw( wp_unslash( $_POST['sec_expiration_url'] ) ) : '';
         
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
+		// Validate action.
+		if ( ! in_array( $expiration_action, array( 'draft', 'redirect' ), true ) ) {
+			$expiration_action = 'draft';
+		}
+
+		// Validate date format.
+		if ( ! empty( $expiration_date ) && ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $expiration_date ) ) {
+			$expiration_date = '';
+		}
+
+		// Validate time format.
+		if ( ! empty( $expiration_time ) && ! preg_match( '/^\d{2}:\d{2}$/', $expiration_time ) ) {
+			$expiration_time = '23:59';
+		}
+
+		// If redirect is selected but no URL provided, change action to draft.
+		if ( 'redirect' === $expiration_action && empty( $expiration_url ) ) {
+			$expiration_action = 'draft';
+		}
         
-        if (!current_user_can('edit_post', $post_id)) {
-            return;
-        }
-        
-        // Sanitize and save data
-        $expiration_date = isset($_POST['sec_expiration_date']) ? sanitize_text_field($_POST['sec_expiration_date']) : '';
-        $expiration_time = isset($_POST['sec_expiration_time']) ? sanitize_text_field($_POST['sec_expiration_time']) : '';
-        $expiration_action = isset($_POST['sec_expiration_action']) ? sanitize_text_field($_POST['sec_expiration_action']) : '';
-        $expiration_url = isset($_POST['sec_expiration_url']) ? esc_url_raw($_POST['sec_expiration_url']) : '';
-        
-        // Validate action
-        if (!in_array($expiration_action, array('draft', 'redirect'))) {
-            $expiration_action = 'draft';
-        }
-        
-        // Validate date format
-        if (!empty($expiration_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $expiration_date)) {
-            $expiration_date = '';
-        }
-        
-        // Validate time format
-        if (!empty($expiration_time) && !preg_match('/^\d{2}:\d{2}$/', $expiration_time)) {
-            $expiration_time = '23:59';
-        }
-        
-        // If redirect is selected but no URL provided, change action to draft
-        if ($expiration_action === 'redirect' && empty($expiration_url)) {
-            $expiration_action = 'draft';
-        }
-        
-        // Save or delete meta data
-        if (!empty($expiration_date)) {
-            update_post_meta($post_id, $this->meta_key_date, $expiration_date);
-            update_post_meta($post_id, $this->meta_key_time, $expiration_time);
-            update_post_meta($post_id, $this->meta_key_action, $expiration_action);
-            
-            if ($expiration_action === 'redirect' && !empty($expiration_url)) {
-                update_post_meta($post_id, $this->meta_key_url, $expiration_url);
-            } else {
-                delete_post_meta($post_id, $this->meta_key_url);
-            }
-        } else {
-            // Remove all expiration meta if no date is set
-            delete_post_meta($post_id, $this->meta_key_date);
-            delete_post_meta($post_id, $this->meta_key_time);
-            delete_post_meta($post_id, $this->meta_key_action);
-            delete_post_meta($post_id, $this->meta_key_url);
-        }
+		// Save or delete meta data.
+		if ( ! empty( $expiration_date ) ) {
+			update_post_meta( $post_id, $this->meta_key_date, $expiration_date );
+			update_post_meta( $post_id, $this->meta_key_time, $expiration_time );
+			update_post_meta( $post_id, $this->meta_key_action, $expiration_action );
+
+			if ( 'redirect' === $expiration_action && ! empty( $expiration_url ) ) {
+				update_post_meta( $post_id, $this->meta_key_url, $expiration_url );
+			} else {
+				delete_post_meta( $post_id, $this->meta_key_url );
+			}
+		} else {
+			// Remove all expiration meta if no date is set.
+			delete_post_meta( $post_id, $this->meta_key_date );
+			delete_post_meta( $post_id, $this->meta_key_time );
+			delete_post_meta( $post_id, $this->meta_key_action );
+			delete_post_meta( $post_id, $this->meta_key_url );
+		}
     }
     
     public function handle_post_republish($new_status, $old_status, $post) {
@@ -300,6 +369,7 @@ class SignalfireExpireContent {
             
             // Optional: Log this action for debugging
             if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
                 error_log(sprintf(
                     '[Signalfire Expire Content] Expiration data cleared for republished post ID: %d',
                     $post->ID
@@ -423,4 +493,5 @@ class SignalfireExpireContent {
     }
 }
 
+// Initialize the plugin.
 new SignalfireExpireContent();
