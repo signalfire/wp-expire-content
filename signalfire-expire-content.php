@@ -4,17 +4,17 @@
  * Plugin URI: https://wordpress.org/plugins/signalfire-expire-content/
  * Description: Adds expiration functionality to posts and pages with customizable actions when content expires.
  * Version: 1.0.0
- * Author: Signalfire
- * Author URI: https://signalfire.com
+ * Author: signalfirecouk
+ * Author URI: https://signalfire.co.uk
  * Text Domain: signalfire-expire-content
  * Domain Path: /languages
  * Requires at least: 5.0
  * Tested up to: 6.8
  * Requires PHP: 7.4
- * License: GPL v2 or later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * License: GPL v3 or later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
- * @package SignalfireExpireContent
+ * @package SigUkExp_ExpireContent
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class SignalfireExpireContent {
+class SigUkExp_ExpireContent {
 
 	/**
 	 * Meta key for expiration date.
@@ -34,7 +34,7 @@ class SignalfireExpireContent {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $meta_key_date = 'sec_expiration_date';
+	private $meta_key_date = 'sigukexp_expiration_date';
 
 	/**
 	 * Meta key for expiration time.
@@ -42,7 +42,7 @@ class SignalfireExpireContent {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $meta_key_time = 'sec_expiration_time';
+	private $meta_key_time = 'sigukexp_expiration_time';
 
 	/**
 	 * Meta key for expiration action.
@@ -50,7 +50,7 @@ class SignalfireExpireContent {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $meta_key_action = 'sec_expiration_action';
+	private $meta_key_action = 'sigukexp_expiration_action';
 
 	/**
 	 * Meta key for expiration URL.
@@ -58,7 +58,7 @@ class SignalfireExpireContent {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $meta_key_url = 'sec_expiration_url';
+	private $meta_key_url = 'sigukexp_expiration_url';
 
 	/**
 	 * Constructor - Set up hooks and actions.
@@ -88,7 +88,7 @@ class SignalfireExpireContent {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		load_plugin_textdomain( 'signalfire-expire-content', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		// Plugin initialization tasks if needed.
 	}
 
 	/**
@@ -110,7 +110,7 @@ class SignalfireExpireContent {
 
 		foreach ( $post_types as $post_type ) {
 			add_meta_box(
-				'sec_expiration_settings',
+				'sigukexp_expiration_settings',
 				__( 'Expiration Settings', 'signalfire-expire-content' ),
 				array( $this, 'meta_box_callback' ),
 				$post_type,
@@ -131,7 +131,7 @@ class SignalfireExpireContent {
 			return;
 		}
 
-		wp_nonce_field( 'sec_save_expiration', 'sec_expiration_nonce' );
+		wp_nonce_field( 'sigukexp_save_expiration', 'sigukexp_expiration_nonce' );
         
 		$expiration_date   = get_post_meta( $post->ID, $this->meta_key_date, true );
 		$expiration_time   = get_post_meta( $post->ID, $this->meta_key_time, true );
@@ -146,34 +146,34 @@ class SignalfireExpireContent {
 			$expiration_action = 'draft';
 		}
 		?>
-		<div class="sec-expiration-fields">
+		<div class="sigukexp-expiration-fields">
 			<p>
-				<label for="sec_expiration_date">
+				<label for="sigukexp_expiration_date">
 					<strong><?php echo esc_html__( 'Expiration Date:', 'signalfire-expire-content' ); ?></strong>
 				</label><br>
 				<input type="date"
-					   id="sec_expiration_date"
-					   name="sec_expiration_date"
+					   id="sigukexp_expiration_date"
+					   name="sigukexp_expiration_date"
 					   value="<?php echo esc_attr( $expiration_date ); ?>"
 					   class="widefat" />
 			</p>
             
 			<p>
-				<label for="sec_expiration_time">
+				<label for="sigukexp_expiration_time">
 					<strong><?php echo esc_html__( 'Expiration Time:', 'signalfire-expire-content' ); ?></strong>
 				</label><br>
 				<input type="time"
-					   id="sec_expiration_time"
-					   name="sec_expiration_time"
+					   id="sigukexp_expiration_time"
+					   name="sigukexp_expiration_time"
 					   value="<?php echo esc_attr( $expiration_time ); ?>"
 					   class="widefat" />
 			</p>
             
             <p>
-                <label for="sec_expiration_action">
+                <label for="sigukexp_expiration_action">
                     <strong><?php echo esc_html__('When Expired:', 'signalfire-expire-content'); ?></strong>
                 </label><br>
-                <select id="sec_expiration_action" name="sec_expiration_action" class="widefat">
+                <select id="sigukexp_expiration_action" name="sigukexp_expiration_action" class="widefat">
                     <option value="draft" <?php selected($expiration_action, 'draft'); ?>>
                         <?php echo esc_html__('Change to Draft', 'signalfire-expire-content'); ?>
                     </option>
@@ -183,13 +183,13 @@ class SignalfireExpireContent {
                 </select>
             </p>
             
-            <p id="sec_redirect_url_field" <?php echo ($expiration_action !== 'redirect') ? 'style="display:none;"' : ''; ?>>
-                <label for="sec_expiration_url">
+            <p id="sigukexp_redirect_url_field" <?php echo ($expiration_action !== 'redirect') ? 'style="display:none;"' : ''; ?>>
+                <label for="sigukexp_expiration_url">
                     <strong><?php echo esc_html__('Redirect URL:', 'signalfire-expire-content'); ?></strong>
                 </label><br>
                 <input type="url" 
-                       id="sec_expiration_url" 
-                       name="sec_expiration_url" 
+                       id="sigukexp_expiration_url" 
+                       name="sigukexp_expiration_url" 
                        value="<?php echo esc_attr($expiration_url); ?>" 
                        class="widefat" 
                        placeholder="https://example.com" />
@@ -219,14 +219,14 @@ class SignalfireExpireContent {
         </div>
         
         <style>
-        .sec-expiration-fields p {
+        .sigukexp-expiration-fields p {
             margin-bottom: 15px;
         }
-        .sec-expiration-fields label {
+        .sigukexp-expiration-fields label {
             display: block;
             margin-bottom: 5px;
         }
-        .sec-expiration-fields .description {
+        .sigukexp-expiration-fields .description {
             display: block;
             margin-top: 5px;
             font-style: italic;
@@ -251,15 +251,15 @@ class SignalfireExpireContent {
         $inline_script = "
         jQuery(document).ready(function($) {
             function toggleRedirectField() {
-                var action = $('#sec_expiration_action').val();
+                var action = $('#sigukexp_expiration_action').val();
                 if (action === 'redirect') {
-                    $('#sec_redirect_url_field').show();
+                    $('#sigukexp_redirect_url_field').show();
                 } else {
-                    $('#sec_redirect_url_field').hide();
+                    $('#sigukexp_redirect_url_field').hide();
                 }
             }
             
-            $('#sec_expiration_action').on('change', toggleRedirectField);
+            $('#sigukexp_expiration_action').on('change', toggleRedirectField);
             toggleRedirectField(); // Initialize on page load
         });
         ";
@@ -275,8 +275,8 @@ class SignalfireExpireContent {
 	 */
 	public function save_meta_box( $post_id ) {
 		// Security checks.
-		$nonce = isset( $_POST['sec_expiration_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_nonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'sec_save_expiration' ) ) {
+		$nonce = isset( $_POST['sigukexp_expiration_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['sigukexp_expiration_nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'sigukexp_save_expiration' ) ) {
 			return;
 		}
 
@@ -289,10 +289,10 @@ class SignalfireExpireContent {
 		}
 
 		// Sanitize and save data.
-		$expiration_date   = isset( $_POST['sec_expiration_date'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_date'] ) ) : '';
-		$expiration_time   = isset( $_POST['sec_expiration_time'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_time'] ) ) : '';
-		$expiration_action = isset( $_POST['sec_expiration_action'] ) ? sanitize_text_field( wp_unslash( $_POST['sec_expiration_action'] ) ) : '';
-		$expiration_url    = isset( $_POST['sec_expiration_url'] ) ? esc_url_raw( wp_unslash( $_POST['sec_expiration_url'] ) ) : '';
+		$expiration_date   = isset( $_POST['sigukexp_expiration_date'] ) ? sanitize_text_field( wp_unslash( $_POST['sigukexp_expiration_date'] ) ) : '';
+		$expiration_time   = isset( $_POST['sigukexp_expiration_time'] ) ? sanitize_text_field( wp_unslash( $_POST['sigukexp_expiration_time'] ) ) : '';
+		$expiration_action = isset( $_POST['sigukexp_expiration_action'] ) ? sanitize_text_field( wp_unslash( $_POST['sigukexp_expiration_action'] ) ) : '';
+		$expiration_url    = isset( $_POST['sigukexp_expiration_url'] ) ? esc_url_raw( wp_unslash( $_POST['sigukexp_expiration_url'] ) ) : '';
         
 		// Validate action.
 		if ( ! in_array( $expiration_action, array( 'draft', 'redirect' ), true ) ) {
@@ -371,7 +371,7 @@ class SignalfireExpireContent {
             if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
                 error_log(sprintf(
-                    '[Signalfire Expire Content] Expiration data cleared for republished post ID: %d',
+                    '[SigUkExp Expire Content] Expiration data cleared for republished post ID: %d',
                     $post->ID
                 ));
             }
@@ -494,4 +494,4 @@ class SignalfireExpireContent {
 }
 
 // Initialize the plugin.
-new SignalfireExpireContent();
+new SigUkExp_ExpireContent();

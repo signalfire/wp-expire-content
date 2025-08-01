@@ -1,8 +1,8 @@
 <?php
 /**
- * Uninstall script for Signalfire Expire Content
+ * Uninstall script for SigUkExp Expire Content
  *
- * @package SignalfireExpireContent
+ * @package SigUkExp_ExpireContent
  * @since 1.0.0
  */
 
@@ -14,15 +14,15 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 /**
  * Remove all plugin data when uninstalled.
  */
-function signalfire_expire_content_uninstall() {
+function sigukexp_expire_content_uninstall() {
 	global $wpdb;
 
 	// Meta keys used by the plugin.
 	$meta_keys = array(
-		'sec_expiration_date',
-		'sec_expiration_time',
-		'sec_expiration_action',
-		'sec_expiration_url',
+		'sigukexp_expiration_date',
+		'sigukexp_expiration_time',
+		'sigukexp_expiration_action',
+		'sigukexp_expiration_url',
 	);
 
 	// Remove all post meta for the plugin using delete_metadata.
@@ -34,4 +34,4 @@ function signalfire_expire_content_uninstall() {
 	wp_cache_flush();
 }
 
-signalfire_expire_content_uninstall();
+sigukexp_expire_content_uninstall();

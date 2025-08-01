@@ -1,5 +1,5 @@
 === Signalfire Expire Content ===
-Contributors: signalfire
+Contributors: signalfirecouk
 Tags: expiration, content, posts, pages, scheduling
 Requires at least: 5.0
 Tested up to: 6.8
