@@ -139,9 +139,7 @@ class SigUkExp_ExpireContent {
 		$expiration_url    = get_post_meta( $post->ID, $this->meta_key_url, true );
         
 		// Set defaults.
-		if ( empty( $expiration_time ) ) {
-			$expiration_time = '23:59';
-		}
+		// No default time value - leave empty
 		if ( empty( $expiration_action ) ) {
 			$expiration_action = 'draft';
 		}
@@ -249,6 +247,11 @@ class SigUkExp_ExpireContent {
             font-style: italic;
             color: #666;
         }
+        .sigukexp-expiration-fields input,
+        .sigukexp-expiration-fields select {
+            width: 100% !important;
+            box-sizing: border-box;
+        }
         ';
         wp_add_inline_style('wp-admin', $inline_css);
         
@@ -310,7 +313,7 @@ class SigUkExp_ExpireContent {
 
 		// Validate time format.
 		if ( ! empty( $expiration_time ) && ! preg_match( '/^\d{2}:\d{2}$/', $expiration_time ) ) {
-			$expiration_time = '23:59';
+			$expiration_time = '';
 		}
 
 		// If redirect is selected but no URL provided, change action to draft.
@@ -358,7 +361,7 @@ class SigUkExp_ExpireContent {
         // Check if the post was previously expired
         $expiration_time = get_post_meta($post->ID, $this->meta_key_time, true);
         if (empty($expiration_time)) {
-            $expiration_time = '23:59';
+            $expiration_time = '00:00';
         }
         
         $expiration_datetime = $expiration_date . ' ' . $expiration_time;
@@ -399,7 +402,7 @@ class SigUkExp_ExpireContent {
         
         $expiration_time = get_post_meta($post_id, $this->meta_key_time, true);
         if (empty($expiration_time)) {
-            $expiration_time = '23:59';
+            $expiration_time = '00:00';
         }
         
         // Create datetime string and check if expired
@@ -470,7 +473,7 @@ class SigUkExp_ExpireContent {
         
         $expiration_time = get_post_meta($post_id, $this->meta_key_time, true);
         if (empty($expiration_time)) {
-            $expiration_time = '23:59';
+            $expiration_time = '00:00';
         }
         
         $expiration_datetime = $expiration_date . ' ' . $expiration_time;
