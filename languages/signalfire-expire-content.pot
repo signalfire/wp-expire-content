@@ -1,0 +1,89 @@
+# Copyright (C) 2025 signalfirecouk
+# This file is distributed under the GPL v3 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Signalfire Expire Content 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/signalfire-expire-content\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-08-09T12:14:05+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: signalfire-expire-content\n"
+
+#. Plugin Name of the plugin
+#: signalfire-expire-content.php
+msgid "Signalfire Expire Content"
+msgstr ""
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: signalfire-expire-content.php
+msgid "https://signalfire.co.uk"
+msgstr ""
+
+#. Description of the plugin
+#: signalfire-expire-content.php
+msgid "Adds expiration functionality to posts and pages with customizable actions when content expires."
+msgstr ""
+
+#. Author of the plugin
+#: signalfire-expire-content.php
+msgid "signalfirecouk"
+msgstr ""
+
+#: signalfire-expire-content.php:114
+msgid "Expiration Settings"
+msgstr ""
+
+#: signalfire-expire-content.php:152
+msgid "Expiration Date:"
+msgstr ""
+
+#: signalfire-expire-content.php:163
+msgid "Expiration Time:"
+msgstr ""
+
+#: signalfire-expire-content.php:174
+msgid "When Expired:"
+msgstr ""
+
+#: signalfire-expire-content.php:178
+msgid "Change to Draft"
+msgstr ""
+
+#: signalfire-expire-content.php:181
+msgid "Redirect to URL"
+msgstr ""
+
+#: signalfire-expire-content.php:188
+msgid "Redirect URL:"
+msgstr ""
+
+#: signalfire-expire-content.php:197
+msgid "Enter the full URL to redirect to when content expires."
+msgstr ""
+
+#. translators: %s: formatted expiration date and time
+#: signalfire-expire-content.php:211
+msgid "Content will expire on: %s"
+msgstr ""
+
+#: signalfire-expire-content.php:452
+msgid "Expiration"
+msgstr ""
+
+#: signalfire-expire-content.php:488
+msgid "Redirect"
+msgstr ""
+
+#: signalfire-expire-content.php:488
+msgid "Draft"
+msgstr ""
+
+#: signalfire-expire-content.php:492
+msgid "EXPIRED"
+msgstr ""

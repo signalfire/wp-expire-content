@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Signalfire Expire Content
- * Plugin URI: https://wordpress.org/plugins/signalfire-expire-content/
+ * Plugin URI: https://signalfire.co.uk
  * Description: Adds expiration functionality to posts and pages with customizable actions when content expires.
  * Version: 1.0.0
  * Author: signalfirecouk
@@ -218,21 +218,6 @@ class SigUkExp_ExpireContent {
             <?php endif; ?>
         </div>
         
-        <style>
-        .sigukexp-expiration-fields p {
-            margin-bottom: 15px;
-        }
-        .sigukexp-expiration-fields label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .sigukexp-expiration-fields .description {
-            display: block;
-            margin-top: 5px;
-            font-style: italic;
-            color: #666;
-        }
-        </style>
         <?php
     }
     
@@ -248,21 +233,40 @@ class SigUkExp_ExpireContent {
         
         wp_enqueue_script('jquery');
         
-        $inline_script = "
+        // Add inline CSS for metabox styling
+        wp_enqueue_style('wp-admin');
+        $inline_css = '
+        .sigukexp-expiration-fields p {
+            margin-bottom: 15px;
+        }
+        .sigukexp-expiration-fields label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .sigukexp-expiration-fields .description {
+            display: block;
+            margin-top: 5px;
+            font-style: italic;
+            color: #666;
+        }
+        ';
+        wp_add_inline_style('wp-admin', $inline_css);
+        
+        $inline_script = '
         jQuery(document).ready(function($) {
             function toggleRedirectField() {
-                var action = $('#sigukexp_expiration_action').val();
-                if (action === 'redirect') {
-                    $('#sigukexp_redirect_url_field').show();
+                var action = $("#sigukexp_expiration_action").val();
+                if (action === "redirect") {
+                    $("#sigukexp_redirect_url_field").show();
                 } else {
-                    $('#sigukexp_redirect_url_field').hide();
+                    $("#sigukexp_redirect_url_field").hide();
                 }
             }
             
-            $('#sigukexp_expiration_action').on('change', toggleRedirectField);
+            $("#sigukexp_expiration_action").on("change", toggleRedirectField);
             toggleRedirectField(); // Initialize on page load
         });
-        ";
+        ';
         
         wp_add_inline_script('jquery', $inline_script);
     }
